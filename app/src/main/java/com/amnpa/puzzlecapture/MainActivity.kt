@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQ_IMG_CAP && resultCode == RESULT_OK){
             val imgBitmap = data?.extras?.get("data") as Bitmap
             imgView.setImageBitmap(imgBitmap)
+            val pt = PuzzleTransformer(this, imgBitmap)
         }
         else{
             super.onActivityResult(requestCode, resultCode, data)
