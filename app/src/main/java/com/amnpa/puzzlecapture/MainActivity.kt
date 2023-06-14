@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
 import android.widget.ImageView
@@ -41,7 +42,12 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQ_IMG_CAP && resultCode == RESULT_OK){
             val imgBitmap = data?.extras?.get("data") as Bitmap
             imgView.setImageBitmap(imgBitmap)
-            val pt = PuzzleTransformer(this, imgBitmap)
+            val newIntent = Intent(this, PuzzleActivity::class.java)
+            val newExtras = Bundle()
+            newExtras.putParcelable("bitmap", imgBitmap)
+            newIntent.putExtras(newExtras)
+            startActivity(newIntent)
+
         }
         else{
             super.onActivityResult(requestCode, resultCode, data)
