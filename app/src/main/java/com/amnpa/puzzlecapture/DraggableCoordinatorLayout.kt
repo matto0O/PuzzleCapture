@@ -2,11 +2,13 @@ package com.amnpa.puzzlecapture
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.customview.widget.ViewDragHelper
 import java.util.*
+import kotlin.system.exitProcess
 
 // author - https://gist.github.com/smartherd
 
@@ -54,6 +56,12 @@ class DraggableCoordinatorLayout @JvmOverloads constructor(context: Context?, at
         }
 
         override fun onViewReleased(view: View, v: Float, v1: Float) {
+            if(view is Tile)
+                Log.v("dbg- info", "${ view.getRangeX() } ${ view.getRangeY() } ${ view.getPosition() } ${ view.top } ${view.left}")
+            if(view is Tile && view.top in view.getRangeY() && view.left in view.getRangeX()){
+                view.isClickable = false
+                view.isFocusable = false
+            }
             if (viewDragListener != null) {
                 viewDragListener!!.onViewReleased(view, v, v1)
             }

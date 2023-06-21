@@ -4,19 +4,20 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
+import androidx.core.graphics.scale
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.core.CvType.CV_8UC4
 import org.opencv.imgproc.Imgproc.*
 
 
-class PuzzleTransformer(private val context: Context, og_image: Bitmap) {
+class PuzzleTransformer(private val context: Context, og_image: Bitmap, endHeight: Double) {
 
     val tiles = mutableListOf<Tile>()
     private val puzzlePatternSrc = R.drawable.puzzle4x6_portrait_clr
 
     init {
-        transform(og_image, puzzlePatternSrc)
+        transform(og_image, puzzlePatternSrc, endHeight)
     }
 
 
@@ -65,7 +66,7 @@ class PuzzleTransformer(private val context: Context, og_image: Bitmap) {
         return bitmap
     }
 
-    private fun transform(imageBitmap: Bitmap, puzzlePatternDir: Int) {
+    private fun transform(imageBitmap: Bitmap, puzzlePatternDir: Int, endHeight: Double) {
         val image = bitmapToMat(imageBitmap)
         val puzzlePattern = bitmapToMat(BitmapFactory.decodeResource(
             context.resources,
@@ -73,6 +74,8 @@ class PuzzleTransformer(private val context: Context, og_image: Bitmap) {
         ))
 
         resize(image, image, Size(puzzlePattern.cols().toDouble(), puzzlePattern.rows().toDouble()))
+
+        val scale = endHeight / image.size().height
 
         val colors = HashSet<Scalar>()
 
@@ -86,7 +89,14 @@ class PuzzleTransformer(private val context: Context, og_image: Bitmap) {
             try {
                 val puzzle = puzzleByColor(color, puzzlePattern, image)
                 val puzzleBitmap = matToBitmap(puzzle.third)
-                tiles.add(Tile(puzzle.first, puzzle.second, puzzleBitmap))
+                val resultingBitmap = puzzleBitmap.scale(
+                    (puzzleBitmap.width * scale).toInt(),
+                    (puzzleBitmap.height * scale).toInt(),
+                    filter = false
+                )
+                val newTile = Tile(context)
+                newTile.setAll(puzzle.first, puzzle.second, resultingBitmap)
+                tiles.add(newTile)
             } catch (e: IllegalArgumentException) {
                 // Skip the puzzle if it fails
             }

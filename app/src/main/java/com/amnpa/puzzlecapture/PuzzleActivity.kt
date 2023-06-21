@@ -9,6 +9,7 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_puzzle.*
+import kotlin.random.Random
 
 
 class PuzzleActivity : AppCompatActivity() {
@@ -22,33 +23,40 @@ class PuzzleActivity : AppCompatActivity() {
         chronometer.base=SystemClock.elapsedRealtime()
         chronometer.start()
 
+        val puzzleBackground = findViewById<ImageView>(R.id.puzzleBackground)
+        val puzzleStartingDock = findViewById<ImageView>(R.id.puzzleStart)
+
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
         val height = displayMetrics.heightPixels
         val width = displayMetrics.widthPixels
 
         val layoutParams = parentCoordinatorLayout.layoutParams
-        Log.v("dbg- h", layoutParams.height.toString())
-        Log.v("dbg- w", layoutParams.width.toString())
         layoutParams.height = ((height-64) * 0.8).toInt()
         layoutParams.width = (width * 0.8).toInt()
         parentCoordinatorLayout.layoutParams = layoutParams
-        Log.v("dbg- h", layoutParams.height.toString())
-        Log.v("dbg- w", layoutParams.width.toString())
+
+        puzzleBackground.layoutParams.height = (layoutParams.height * 0.75).toInt()
+        puzzleStartingDock.layoutParams.height = (layoutParams.height * 0.20).toInt()
+        val puzzleDockPos = IntArray(2)
+        puzzleStartingDock.getLocationInWindow(puzzleDockPos)
 
         val imgBitmap = this.intent.extras!!.getParcelable<Bitmap>("bitmap")
-        val pt = PuzzleTransformer(this, imgBitmap!!)
+        val pt = PuzzleTransformer(
+            this,
+            imgBitmap!!,
+            puzzleBackground.layoutParams.height.toDouble()
+        )
         val tiles = pt.tiles
         tiles.sort()
 
-        for (i in 0 until tiles.size){
-            val imageView = ImageView(this)
-            val usedBitmap = tiles[i].bitmap
-            imageView.setImageBitmap(usedBitmap)
-            imageView.isClickable = true
-            imageView.isFocusable = true
-            parentCoordinatorLayout.addView(imageView)
-            parentCoordinatorLayout.addDraggableChild(imageView)
+        for (tile in tiles){
+//            Log.v("dbg- order", "$i - y:${tiles[i].img_y} x:${tiles[i].img_x}"
+//            Log.v("dbg- order", "$i - y:${puzzleDockPos[1]} x:${puzzleDockPos[0]}")
+            tile.top = (puzzleDockPos[1] * 1.2).toInt()
+            tile.left = Random.nextInt(layoutParams.width) + puzzleDockPos[0]
+            parentCoordinatorLayout.addView(tile)
+            parentCoordinatorLayout.addDraggableChild(tile)
         }
 
 
